@@ -1,7 +1,7 @@
 USE [BIA_DEV]
 GO
 
-/****** Object:  StoredProcedure [stk].[uspCheckSQLServices]    Script Date: 11-5-2021 08:11:26 ******/
+/****** Object:  StoredProcedure [stk].[uspCheckSQLServices]    Script Date: 11-5-2021 19:31:50 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -62,7 +62,7 @@ BEGIN
 END
 GO
 
-/****** Object:  StoredProcedure [stk].[uspExportToCSV]    Script Date: 11-5-2021 08:11:26 ******/
+/****** Object:  StoredProcedure [stk].[uspExportToCSV]    Script Date: 11-5-2021 19:31:51 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -114,7 +114,7 @@ Invoke-Sqlcmd -Query '''+@ExportQuery+''' -ServerInstance "'+@DatabaseServer+'" 
 END
 GO
 
-/****** Object:  StoredProcedure [stk].[uspSendMail]    Script Date: 11-5-2021 08:11:26 ******/
+/****** Object:  StoredProcedure [stk].[uspSendMail]    Script Date: 11-5-2021 19:31:51 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -150,4 +150,68 @@ BEGIN
 END
 GO
 
+/****** Object:  StoredProcedure [stk].[uspServerUptime]    Script Date: 11-5-2021 19:31:51 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+-- =============================================
+-- Author:		John Minkjan
+-- Create date: 20210511
+-- Description:	Uptime Server 
+-- =============================================
+CREATE procedure [stk].[uspServerUptime]
+AS
+BEGIN
+
+	DECLARE @cmd nvarchar(255) = 'systeminfo|find "Time:"'
+
+	CREATE TABLE #output 
+		(id int identity(1,1)
+		, feedback nvarchar(255) null)
+
+	INSERT #output (feedback) 
+	EXEC [MASTER]..xp_cmdshell @cmd
+	SELECT 
+		CONVERT(DATETIME, 
+			LTRIM(RTRIM(REPLACE(REPLACE(feedback,'System Boot Time:',''),',','')))
+		,101)  as server_start_time
+		,CONVERT(VARCHAR,  
+			GETDATE() -
+			CONVERT(DATETIME, 
+				LTRIM(RTRIM(REPLACE(REPLACE(feedback,'System Boot Time:',''),',','')))
+			,101) 
+		,108) AS server_up_time	
+		FROM #output 
+	WHERE feedback is not null 
+
+	DROP TABLE #output
+
+END
+GO
+
+/****** Object:  StoredProcedure [stk].[uspSQLServerUptime]    Script Date: 11-5-2021 19:31:51 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		John Minkjan
+-- Create date: 20210511
+-- Description:	Uptime SQL Server Instance
+-- =============================================
+CREATE procedure [stk].[uspSQLServerUptime]
+AS
+BEGIN
+	SELECT 
+	   sqlserver_start_time
+	 , Convert(varchar,  GETDATE() -sqlserver_start_time, 108)  sqlserver_up_time
+	FROM sys.dm_os_sys_info;
+END
+GO
 
