@@ -1,7 +1,68 @@
 USE [BIA_DEV]
 GO
 
-/****** Object:  StoredProcedure [stk].[uspExportToCSV]    Script Date: 10-5-2021 10:05:13 ******/
+/****** Object:  StoredProcedure [stk].[uspCheckSQLServices]    Script Date: 11-5-2021 08:11:26 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		John Minkjan
+-- Create date: 20210511
+-- Description:	Check SQL Services
+-- =============================================
+CREATE PROCEDURE [stk].[uspCheckSQLServices]
+AS
+BEGIN
+
+	SET NOCOUNT ON;
+    DECLARE @LoadDT DATETIME = GETDATE();
+	DECLARE @WINSCCMD TABLE (ID INT IDENTITY (1,1) PRIMARY KEY NOT NULL, Line VARCHAR(MAX))
+
+	IF OBJECT_ID(N'tempdb..#ServiceStates') IS NOT NULL
+	BEGIN
+		DROP TABLE #ServiceStates
+	END
+ 
+	INSERT INTO @WINSCCMD(Line) EXEC master.dbo.xp_cmdshell 'sc queryex type= service state= all'
+ 
+	SELECT  @LoadDT											AS LoadDT	
+			, @@SERVERNAME									AS [ServerName]
+			, ltrim(rtrim (SUBSTRING (W1.Line, 15, 100)))	AS ServiceName
+			, ltrim(rtrim (SUBSTRING (W2.Line, 15, 100)))	AS DisplayName
+			, ltrim(rtrim (SUBSTRING (W3.Line, 33, 100)))	AS ServiceState
+			INTO #ServiceStates
+	FROM @WINSCCMD W1, @WINSCCMD W2, @WINSCCMD W3
+	WHERE W1.ID = W2.ID - 1 AND
+			W3.ID - 3 = W1.ID AND
+			LTRIM(RTRIM (LOWER (SUBSTRING (W3.Line, 33, 100)))) in ('RUNNING','STOPPED')
+	ORDER BY 2
+
+	DECLARE @StoppedServices INT
+
+	SELECT * FROM #ServiceStates
+	WHERE ServiceName IN 
+	('MSOLAP$TABULAR'
+	,'MSSQLSERVER'
+	,'MSSQLServerOLAPService'
+	,'SQLServerReportingServices'
+	,'MSOLAP$TABULAR'
+	,'SSASTELEMETRY'
+	,'SSASTELEMETRY$TABULAR'
+	,'SQLBrowser'
+	,'SQLTELEMETRY'
+	,'MsDtsServer150'
+	,'SSISTELEMETRY150'
+	,'MSSQLLaunchpad'
+	,'SQLWriter')
+	--AND ServiceState = 'STOPPED'
+
+END
+GO
+
+/****** Object:  StoredProcedure [stk].[uspExportToCSV]    Script Date: 11-5-2021 08:11:26 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -53,7 +114,7 @@ Invoke-Sqlcmd -Query '''+@ExportQuery+''' -ServerInstance "'+@DatabaseServer+'" 
 END
 GO
 
-/****** Object:  StoredProcedure [stk].[uspSendMail]    Script Date: 10-5-2021 10:05:14 ******/
+/****** Object:  StoredProcedure [stk].[uspSendMail]    Script Date: 11-5-2021 08:11:26 ******/
 SET ANSI_NULLS ON
 GO
 
