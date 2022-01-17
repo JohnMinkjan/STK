@@ -56,7 +56,7 @@ Most of these are adapted from things I found on the net.
 
 [stk].[uspCreateMissingIndexes]
 
-[stk].[uspDeleteUnusedIndexes]
+### [stk].[uspDeleteUnusedIndexes]
 --Remove unused indexes
 - @DBName VARCHAR(200) = NULL,
 - @IDXUserUpdatesTreshold INT = 1000,
