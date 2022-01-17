@@ -1,7 +1,6 @@
 USE [BIA_DEV]
 GO
 
-/****** Object:  StoredProcedure [stk].[uspCheckSQLServices]    Script Date: 11-5-2021 19:31:50 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -13,7 +12,7 @@ GO
 -- Create date: 20210511
 -- Description:	Check SQL Services
 -- =============================================
-CREATE PROCEDURE [stk].[uspCheckSQLServices]
+CREATE OR ALTER PROCEDURE [stk].[uspCheckSQLServices]
 AS
 BEGIN
 
@@ -62,7 +61,7 @@ BEGIN
 END
 GO
 
-/****** Object:  StoredProcedure [stk].[uspExportToCSV]    Script Date: 11-5-2021 19:31:51 ******/
+
 SET ANSI_NULLS ON
 GO
 
@@ -79,7 +78,7 @@ GO
 --		base checks
 -- =============================================
 
-CREATE   PROCEDURE [stk].[uspExportToCSV]
+CREATE OR ALTER PROCEDURE [stk].[uspExportToCSV]
 (
 	 @ExportQuery		VARCHAR(2000)
 	,@ExportFileName	VARCHAR(250)
@@ -114,7 +113,6 @@ Invoke-Sqlcmd -Query '''+@ExportQuery+''' -ServerInstance "'+@DatabaseServer+'" 
 END
 GO
 
-/****** Object:  StoredProcedure [stk].[uspSendMail]    Script Date: 11-5-2021 19:31:51 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -130,7 +128,7 @@ GO
 --		base checks
 -- =============================================
 
-CREATE   PROCEDURE [stk].[uspSendMail]
+CREATE OR ALTER PROCEDURE [stk].[uspSendMail]
 (
 	@recipients VARCHAR(500),
 	@copy_recipients VARCHAR(500) NULL,
@@ -150,20 +148,18 @@ BEGIN
 END
 GO
 
-/****** Object:  StoredProcedure [stk].[uspServerUptime]    Script Date: 11-5-2021 19:31:51 ******/
 SET ANSI_NULLS ON
 GO
 
 SET QUOTED_IDENTIFIER ON
 GO
 
-
 -- =============================================
 -- Author:		John Minkjan
 -- Create date: 20210511
 -- Description:	Uptime Server 
 -- =============================================
-CREATE procedure [stk].[uspServerUptime]
+CREATE OR ALTER PROCEDURE [stk].[uspServerUptime]
 AS
 BEGIN
 
@@ -193,7 +189,6 @@ BEGIN
 END
 GO
 
-/****** Object:  StoredProcedure [stk].[uspSQLServerUptime]    Script Date: 11-5-2021 19:31:51 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -205,7 +200,7 @@ GO
 -- Create date: 20210511
 -- Description:	Uptime SQL Server Instance
 -- =============================================
-CREATE procedure [stk].[uspSQLServerUptime]
+CREATE OR ALTER PROCEDURE [stk].[uspSQLServerUptime]
 AS
 BEGIN
 	SELECT 

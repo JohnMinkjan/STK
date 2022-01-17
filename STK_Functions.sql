@@ -140,7 +140,6 @@ BEGIN
 END;
 GO
 
-/****** Object:  UserDefinedFunction [stk].[fnCountChar]    Script Date: 10-5-2021 10:02:07 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -203,7 +202,6 @@ END
 
 GO
 
-/****** Object:  UserDefinedFunction [stk].[fnInitCap]    Script Date: 10-5-2021 10:02:07 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -252,7 +250,6 @@ BEGIN
 END
 GO
 
-/****** Object:  UserDefinedFunction [stk].[fnStripHTML]    Script Date: 10-5-2021 10:02:07 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -363,7 +360,6 @@ BEGIN
 END
 GO
 
-/****** Object:  UserDefinedFunction [stk].[fnValidateEmail]    Script Date: 10-5-2021 10:02:07 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -401,7 +397,6 @@ RETURN
 END
 GO
 
-/****** Object:  UserDefinedFunction [stk].[fnValidateURL]    Script Date: 10-5-2021 10:02:07 ******/
 SET ANSI_NULLS ON
 GO
 
