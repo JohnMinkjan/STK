@@ -1,7 +1,7 @@
 # STK
 SQL Toolkit
 
-This is a set of functions and procedure I collected over the years. Just some handy stuff everybody can use. Most of this stuff is adapted from things I found on the net
+This is a set of functions and procedure I collected over the years. Just some handy stuff everybody can use. Most of this stuff is adapted from things I found on the net.
 
 ## Functions
 
@@ -34,12 +34,9 @@ This is a set of functions and procedure I collected over the years. Just some h
 
 [stk].[uspCheckSQLServices]
 
-
 [stk].[uspExportToCSV]
 
-
 [stk].[uspSendMail]
-
 
 [stk].[uspServerUptime]
 
