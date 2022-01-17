@@ -7,13 +7,12 @@ Most of these are adapted from things I found on the net.
 
 ## Functions
 
-[stk].[fnCleanString]\
+### [stk].[fnCleanString]\
 -- Strip string from everything but [AZaz09]\
 - @string varchar(1000)\
 - @validchar varchar(255)=null\
 \
-\
-[stk].[fnCleanStringAccents]\
+### [stk].[fnCleanStringAccents]\
 -- Strips string from accents\
 - @string varchar(1000)\
 
