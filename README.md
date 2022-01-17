@@ -1,7 +1,9 @@
 # STK
 SQL Toolkit
 
-This is a set of functions and procedure I collected over the years. Just some handy stuff everybody can use. Most of this stuff is adapted from things I found on the net.
+This is a set of functions and procedures I collected over the years. 
+Just some handy stuff everybody can use. 
+Most of these are adapted from things I found on the net.
 
 ## Functions
 
