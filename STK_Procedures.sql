@@ -299,3 +299,76 @@ BEGIN
 	DEALLOCATE C
 END 
 GO 
+
+
+-- =============================================
+-- Author:		John Minkjan
+-- Create date: 20220117
+-- Description:	Delete Unused indexes
+-- Based on the work of Pinal Dave 
+-- =============================================
+CREATE OR ALTER PROCEDURE [stk].[uspDeleteUnusedIndexes]
+(
+	@DBName VARCHAR(200) = NULL,
+	@IDXUserUpdatesTreshold INT = 1000,
+	@PrintOnly BIT = 0
+)
+AS
+BEGIN
+	IF @DBName IS NULL
+		SET @DBName = (SELECT DB_NAME())
+
+	DECLARE @SQLCreateStatement NVARCHAR(MAX);
+
+	DECLARE C CURSOR FOR
+		SELECT
+			--  o.name AS ObjectName
+			--, i.name AS IndexName
+			--, i.index_id AS IndexID
+			--, dm_ius.user_seeks AS UserSeek
+			--, last_user_seek AS Last_User_Seek
+			--, dm_ius.user_scans AS UserScans
+			--, dm_ius.user_lookups AS UserLookups
+			--, dm_ius.user_updates AS UserUpdates
+			--, p.TableRows,
+			  'DROP INDEX ' + QUOTENAME(i.name)
+			+ ' ON ' + QUOTENAME(s.name) + '.'
+			+ QUOTENAME(OBJECT_NAME(dm_ius.OBJECT_ID)) AS 'drop statement'
+
+			FROM sys.dm_db_index_usage_stats dm_ius
+			INNER JOIN sys.indexes i ON i.index_id = dm_ius.index_id 
+			AND dm_ius.OBJECT_ID = i.OBJECT_ID
+			INNER JOIN sys.objects o ON dm_ius.OBJECT_ID = o.OBJECT_ID
+			INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+			INNER JOIN sys.databases db on dm_ius.database_id = db.database_id
+			INNER JOIN (SELECT SUM(p.rows) TableRows, p.index_id, p.OBJECT_ID
+			FROM sys.partitions p GROUP BY p.index_id, p.OBJECT_ID) p
+			ON p.index_id = dm_ius.index_id AND dm_ius.OBJECT_ID = p.OBJECT_ID
+			WHERE  (1=1)
+			AND db.[name] = @DBName
+			AND OBJECTPROPERTY(dm_ius.OBJECT_ID,'IsUserTable') = 1
+			--AND dm_ius.database_id = DB_ID()
+			AND i.type_desc = 'nonclustered'
+			AND i.is_primary_key = 0
+			AND i.is_unique_constraint = 0
+			and  dm_ius.user_updates > @IDXUserUpdatesTreshold
+			and (dm_ius.user_seeks + dm_ius.user_scans) = 0
+			--ORDER BY (dm_ius.user_seeks + dm_ius.user_scans + dm_ius.user_lookups) ASC
+
+	OPEN C
+	FETCH NEXT FROM C INTO @SQLCreateStatement
+
+	WHILE @@FETCH_STATUS = 0 
+		BEGIN 
+			PRINT @SQLCreateStatement
+
+			IF @PrintOnly = 0
+			BEGIN 
+				EXEC (@SQLCreateStatement)
+			END 
+			FETCH NEXT FROM C INTO @SQLCreateStatement
+		END
+	CLOSE C
+	DEALLOCATE C
+END 
+GO 

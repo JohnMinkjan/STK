@@ -34,12 +34,12 @@ Most of these are adapted from things I found on the net.
 
 [stk].[fnValidationCode]
 
-[stk].[fnISOYearWeek]\
+[stk].[fnISOYearWeek]
 
-[stk].[fnTrimLeadingCharacters]\
---Remove all leading characters, default '0'\
-@strIn VARCHAR(500),\
-@LeadingCharacter CHAR(1) = '0'
+[stk].[fnTrimLeadingCharacters]
+--Remove all leading characters, default '0'
+- @strIn VARCHAR(500),
+- @LeadingCharacter CHAR(1) = '0'
 
 
 ## Procedures
@@ -56,3 +56,8 @@ Most of these are adapted from things I found on the net.
 
 [stk].[uspCreateMissingIndexes]
 
+[stk].[uspDeleteUnusedIndexes]
+--Remove unused indexes
+- @DBName VARCHAR(200) = NULL,
+- @IDXUserUpdatesTreshold INT = 1000,
+- @PrintOnly BIT = 0
