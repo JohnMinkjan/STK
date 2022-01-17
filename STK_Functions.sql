@@ -1,7 +1,6 @@
 USE [BIA_DEV]
 GO
 
-/****** Object:  UserDefinedFunction [stk].[fnCleanString]    Script Date: 10-5-2021 10:02:06 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -16,7 +15,7 @@ GO
 -- V0.1	
 --		base checks
 -- =============================================
-CREATE   FUNCTION [stk].[fnCleanString] 
+CREATE OR ALTER FUNCTION [stk].[fnCleanString] 
 (	
 	 @string varchar(1000)
 	,@validchar varchar(255)=null
@@ -71,7 +70,7 @@ GO
 -- V0.1	
 --		base checks
 -- =============================================
-CREATE   FUNCTION [stk].[fnCleanStringAccents] 
+CREATE OR ALTER FUNCTION [stk].[fnCleanStringAccents] 
 (	
 	 @string varchar(1000)	
 )
@@ -98,7 +97,7 @@ GO
 -- =============================================
 
 
-CREATE   FUNCTION [stk].[fnConvertUnixToDateTime] 
+CREATE OR ALTER FUNCTION [stk].[fnConvertUnixToDateTime] 
 	(@Datetime BIGINT)
 RETURNS DATETIME
 AS
@@ -127,7 +126,7 @@ GO
 -- =============================================
 
 
-CREATE   FUNCTION [stk].[fnConvertUnixToDateTimeMS] 
+CREATE OR ALTER FUNCTION [stk].[fnConvertUnixToDateTimeMS] 
 	(@Datetime BIGINT)
 RETURNS DATETIME
 AS
@@ -157,7 +156,7 @@ GO
 -- V0.1	
 --		base checks
 -- =============================================
-CREATE   FUNCTION [stk].[fnCountChar] 
+CREATE OR ALTER FUNCTION [stk].[fnCountChar] 
 	( @pInput VARCHAR(1000), @pSearchChar CHAR(1) )
 RETURNS INT
 BEGIN
@@ -187,7 +186,7 @@ GO
 -- =============================================
 
 
-CREATE   FUNCTION [stk].[fnExcelToDateTime]
+CREATE OR ALTER FUNCTION [stk].[fnExcelToDateTime]
 	(@ExcelDateTime FLOAT)
 RETURNS DATETIME
 BEGIN
@@ -218,7 +217,7 @@ GO
 -- V0.1	
 --		base checks
 -- =============================================
-CREATE   FUNCTION [stk].[fnInitCap] 
+CREATE OR ALTER FUNCTION [stk].[fnInitCap] 
 	( @InputString varchar(4000) ) 
 RETURNS VARCHAR(4000)
 AS
@@ -267,7 +266,7 @@ GO
 -- V0.1	
 --		base checks
 -- =============================================
-CREATE FUNCTION [stk].[fnStripHTML]
+CREATE OR ALTER FUNCTION [stk].[fnStripHTML]
 (	
 	@HTMLText varchar(MAX)
 )
@@ -379,7 +378,7 @@ GO
 --		base checks
 -- =============================================
 
-CREATE   FUNCTION [stk].[fnValidateEmail] 
+CREATE OR ALTER FUNCTION [stk].[fnValidateEmail] 
 	(@email VARCHAR(255))
 RETURNS bit
 AS
@@ -418,7 +417,7 @@ GO
 -- =============================================
 
 
-CREATE   FUNCTION [stk].[fnValidateURL]
+CREATE OR ALTER FUNCTION [stk].[fnValidateURL]
 	(@URL VARCHAR(300))
 RETURNS BIT
 AS 
@@ -461,7 +460,7 @@ BEGIN
 END
 GO
 
-/****** Object:  UserDefinedFunction [stk].[fnValidationCode]    Script Date: 10-5-2021 10:02:07 ******/
+
 SET ANSI_NULLS ON
 GO
 
@@ -476,7 +475,7 @@ GO
 --	Default 6 characters
 -- =============================================
 
-CREATE   FUNCTION [stk].[fnValidationCode]
+CREATE OR ALTER FUNCTION [stk].[fnValidationCode]
 (
 	@size INT = 6
 )
@@ -499,4 +498,36 @@ BEGIN
 END;
 GO
 
+-- =============================================
+-- Author:		John Minkjan
+-- Create date: 20220117
+-- Description:	Get ISO YearWeek
+-- V0.1	
+--		Default Current date
+-- =============================================
 
+
+CREATE OR ALTER FUNCTION [stk].[fnISOYearWeek]
+(
+	@dtDate DATETIME = NULL
+)
+RETURNS INT
+AS
+BEGIN
+	IF @dtDate IS NULL 
+		SET @dtDate = GETDATE()
+
+    DECLARE @ISOYearWeek INT
+
+	SET @ISOYearWeek = (	 
+	SELECT CASE
+		WHEN DATEPART(ISO_WEEK, @dtDate) > 50 AND MONTH(@dtDate) = 1 THEN YEAR(@dtDate) - 1
+		WHEN DATEPART(ISO_WEEK, @dtDate) = 1 AND MONTH(@dtDate) = 12 THEN YEAR(@dtDate) + 1
+		ELSE YEAR(@dtDate) END ) * 100 +
+	    DATEPART(ISO_WEEK,	@dtDate)
+
+	RETURN @ISOYearWeek
+END;
+GO
+
+--SELECT [stk].[fnISOYearWeek]('01-JAN-2021')
