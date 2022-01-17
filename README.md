@@ -43,3 +43,8 @@ Most of these are adapted from things I found on the net.
 [stk].[uspServerUptime]
 
 [stk].[uspSQLServerUptime]
+
+[stk].[uspCreateMissingIndexes]
+
+[stk].[fnTrimLeadingCharacters]
+Remove all leading characters, default '0'

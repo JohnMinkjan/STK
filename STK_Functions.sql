@@ -493,6 +493,12 @@ BEGIN
 END;
 GO
 
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
 -- =============================================
 -- Author:		John Minkjan
 -- Create date: 20220117
@@ -526,3 +532,33 @@ END;
 GO
 
 --SELECT [stk].[fnISOYearWeek]('01-JAN-2021')
+
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		John Minkjan
+-- Create date: 20220117
+-- Description:	Trim leading Characters
+-- =============================================
+
+CREATE OR ALTER FUNCTION [stk].[fnTrimLeadingCharacters] 
+( 
+	@strIn VARCHAR(500),
+	@LeadingCharacter CHAR(1) = '0'
+)
+RETURNS VARCHAR(500)
+AS
+BEGIN
+    RETURN REPLACE(
+			LTRIM(
+				REPLACE(
+					@strIn
+					, @LeadingCharacter, ' ')
+					), ' ', @LeadingCharacter)
+END
+GO
