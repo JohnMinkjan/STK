@@ -210,3 +210,92 @@ BEGIN
 END
 GO
 
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		John Minkjan
+-- Create date: 20220117
+-- Description:	Create missing indexes
+-- Based on the work of Pinal Dave 
+-- =============================================
+CREATE OR ALTER PROCEDURE [stk].[uspCreateMissingIndexes]
+(
+	@DBName VARCHAR(200) = NULL,
+	@IDXFileGroup VARCHAR(200) = 'INDEX',
+	@IDXIndexHitSince INT = 3,
+	@IDXUserImpactTreshold INT = 100,
+	@IDXHitCountTreshold INT = 25,
+	@PrintOnly BIT = 0
+)
+AS
+BEGIN
+	IF @DBName IS NULL
+		SET @DBName = (SELECT DB_NAME())
+
+	DECLARE @SQLCreateStatement NVARCHAR(MAX);
+
+	DECLARE C CURSOR FOR
+		SELECT 
+		--dm_mid.database_id AS DatabaseID,
+		--dm_migs.avg_user_impact*(dm_migs.user_seeks+dm_migs.user_scans) Avg_Estimated_Impact,
+		--dm_migs.user_seeks+dm_migs.user_scans as SeeksAndScans,
+		--dm_migs.last_user_seek AS Last_User_Seek,
+		--right('000' + CAST(ABS(CHECKSUM(NewId())) % 1000 as varchar(3)),3),
+		--OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) AS [TableName],
+		'CREATE INDEX [IX_' + OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) + '_'
+		+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.equality_columns,''),', ','_'),'[',''),']','') 
+		+ CASE
+		WHEN dm_mid.equality_columns IS NOT NULL
+		AND dm_mid.inequality_columns IS NOT NULL THEN '_'
+		ELSE ''
+		END
+		+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.inequality_columns,''),', ','_'),'[',''),']','')
+		+ '_'
+		+ CONVERT(VARCHAR(8), GETDATE(),112)
+		+ '_'
+		+ right('000' + CAST(ABS(CHECKSUM(NewId())) % 1000 as varchar(3)),3)
+		+ ']'
+		+ ' ON ' + dm_mid.statement
+		+ ' (' + ISNULL (dm_mid.equality_columns,'')
+		+ CASE WHEN dm_mid.equality_columns IS NOT NULL AND dm_mid.inequality_columns 
+		IS NOT NULL THEN ',' ELSE
+		'' END
+		+ ISNULL (dm_mid.inequality_columns, '')
+		+ ')'
+		+ ISNULL (' INCLUDE (' + dm_mid.included_columns + ')', '')
+		+ ' ON ['+@IDXFileGroup+']'
+		 AS Create_Statement
+		FROM sys.dm_db_missing_index_groups dm_mig
+		INNER JOIN sys.dm_db_missing_index_group_stats dm_migs
+		ON dm_migs.group_handle = dm_mig.index_group_handle
+		INNER JOIN sys.dm_db_missing_index_details dm_mid
+		ON dm_mig.index_handle = dm_mid.index_handle
+		INNER JOIN sys.databases db on dm_mid.database_id = db.database_id
+		WHERE (1=1)
+		AND db.[name] = @DBName
+		and dm_migs.last_user_seek >= GETDATE() - @IDXIndexHitSince
+		and dm_migs.avg_user_impact*(dm_migs.user_seeks+dm_migs.user_scans) > @IDXUserImpactTreshold
+		and dm_migs.user_seeks+dm_migs.user_scans >  @IDXHitCountTreshold 
+		--ORDER BY dm_migs.user_seeks+dm_migs.user_scans desc, Avg_Estimated_Impact DESC
+
+	OPEN C
+	FETCH NEXT FROM C INTO @SQLCreateStatement
+
+	WHILE @@FETCH_STATUS = 0 
+		BEGIN 
+			PRINT @SQLCreateStatement
+
+			IF @PrintOnly = 0
+			BEGIN 
+				EXEC (@SQLCreateStatement)
+			END 
+			FETCH NEXT FROM C INTO @SQLCreateStatement
+		END
+	CLOSE C
+	DEALLOCATE C
+END 
+GO 
