@@ -46,5 +46,5 @@ Most of these are adapted from things I found on the net.
 
 [stk].[uspCreateMissingIndexes]
 
-[stk].[fnTrimLeadingCharacters]
-Remove all leading characters, default '0'
+[stk].[fnTrimLeadingCharacters]\
+--Remove all leading characters, default '0'
